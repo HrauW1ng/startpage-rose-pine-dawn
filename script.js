@@ -42,3 +42,52 @@ document
         `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     }
 });
+
+async function loadWeather() {
+
+    const weatherElement =
+        document.getElementById("weather");
+
+    try {
+
+        // Определяем город по IP
+        const ipResponse =
+            await fetch("https://ipapi.co/json/");
+
+        const ipData =
+            await ipResponse.json();
+
+        const city =
+            ipData.city;
+
+        const latitude =
+            ipData.latitude;
+
+        const longitude =
+            ipData.longitude;
+
+        // Получаем погоду
+        const weatherResponse =
+            await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`
+            );
+
+        const weatherData =
+            await weatherResponse.json();
+
+        const temp =
+            Math.round(
+                weatherData.current.temperature_2m
+            );
+
+        weatherElement.textContent =
+            `${city} • ${temp}°C`;
+
+    } catch {
+
+        weatherElement.textContent =
+            "Weather unavailable";
+    }
+}
+
+loadWeather();
