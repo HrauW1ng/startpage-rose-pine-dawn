@@ -52,13 +52,13 @@ async function loadWeather() {
 
         // Определяем город по IP
         const ipResponse =
-            await fetch("https://ipapi.co/json/");
+            await fetch("https://geolocation-db.com/json/");
 
         const ipData =
             await ipResponse.json();
 
         const city =
-            ipData.city;
+            ipData.city || "Unknown city";
 
         const latitude =
             ipData.latitude;
@@ -69,24 +69,29 @@ async function loadWeather() {
         // Получаем погоду
         const weatherResponse =
             await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius`
             );
 
         const weatherData =
             await weatherResponse.json();
 
         const temp =
-            Math.round(
-                weatherData.current.temperature_2m
-            );
+            typeof weatherData.current_weather?.temperature !== "undefined"
+                ? Math.round(weatherData.current_weather.temperature)
+                : null;
+
+        if (temp === null) {
+            throw new Error("No temperature data");
+        }
 
         weatherElement.textContent =
             `${city} • ${temp}°C`;
 
-    } catch {
+    } catch (error) {
 
         weatherElement.textContent =
             "Weather unavailable";
+        console.error(error);
     }
 }
 
